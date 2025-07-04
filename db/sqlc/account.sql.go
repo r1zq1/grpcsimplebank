@@ -13,7 +13,7 @@ const addAccountBalance = `-- name: AddAccountBalance :one
 UPDATE accounts 
 SET balance = balance + $2 
 WHERE id = $1 
-RETURNING id, owner, balance
+RETURNING id, owner, balance, email
 `
 
 type AddAccountBalanceParams struct {
@@ -24,12 +24,41 @@ type AddAccountBalanceParams struct {
 func (q *Queries) AddAccountBalance(ctx context.Context, arg AddAccountBalanceParams) (Account, error) {
 	row := q.db.QueryRowContext(ctx, addAccountBalance, arg.ID, arg.Balance)
 	var i Account
-	err := row.Scan(&i.ID, &i.Owner, &i.Balance)
+	err := row.Scan(
+		&i.ID,
+		&i.Owner,
+		&i.Balance,
+		&i.Email,
+	)
+	return i, err
+}
+
+const createAccount = `-- name: CreateAccount :one
+INSERT INTO accounts (owner, email, balance)
+VALUES ($1, $2, $3)
+RETURNING id, owner, balance, email
+`
+
+type CreateAccountParams struct {
+	Owner   string
+	Email   string
+	Balance int64
+}
+
+func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
+	row := q.db.QueryRowContext(ctx, createAccount, arg.Owner, arg.Email, arg.Balance)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.Owner,
+		&i.Balance,
+		&i.Email,
+	)
 	return i, err
 }
 
 const getAccount = `-- name: GetAccount :one
-SELECT id, owner, balance FROM accounts 
+SELECT id, owner, balance, email FROM accounts 
 WHERE id = $1 
 FOR UPDATE
 `
@@ -37,12 +66,17 @@ FOR UPDATE
 func (q *Queries) GetAccount(ctx context.Context, id int64) (Account, error) {
 	row := q.db.QueryRowContext(ctx, getAccount, id)
 	var i Account
-	err := row.Scan(&i.ID, &i.Owner, &i.Balance)
+	err := row.Scan(
+		&i.ID,
+		&i.Owner,
+		&i.Balance,
+		&i.Email,
+	)
 	return i, err
 }
 
 const getAccountForUpdate = `-- name: GetAccountForUpdate :one
-SELECT id, owner, balance FROM accounts 
+SELECT id, owner, balance, email FROM accounts 
 WHERE id = $1 
 FOR UPDATE
 `
@@ -50,6 +84,11 @@ FOR UPDATE
 func (q *Queries) GetAccountForUpdate(ctx context.Context, id int64) (Account, error) {
 	row := q.db.QueryRowContext(ctx, getAccountForUpdate, id)
 	var i Account
-	err := row.Scan(&i.ID, &i.Owner, &i.Balance)
+	err := row.Scan(
+		&i.ID,
+		&i.Owner,
+		&i.Balance,
+		&i.Email,
+	)
 	return i, err
 }

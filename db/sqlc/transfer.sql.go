@@ -33,3 +33,39 @@ func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) 
 	)
 	return i, err
 }
+
+const listTransfersByAccountID = `-- name: ListTransfersByAccountID :many
+SELECT id, from_account_id, to_account_id, amount, created_at FROM transfers
+WHERE from_account_id = $1 OR to_account_id = $1
+ORDER BY id DESC
+LIMIT 100
+`
+
+func (q *Queries) ListTransfersByAccountID(ctx context.Context, fromAccountID int64) ([]Transfer, error) {
+	rows, err := q.db.QueryContext(ctx, listTransfersByAccountID, fromAccountID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Transfer
+	for rows.Next() {
+		var i Transfer
+		if err := rows.Scan(
+			&i.ID,
+			&i.FromAccountID,
+			&i.ToAccountID,
+			&i.Amount,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

@@ -11,5 +11,9 @@ RETURNING *;
 
 -- name: GetAccount :one
 SELECT * FROM accounts 
-WHERE id = $1 
-FOR UPDATE;
+WHERE id = $1;
+
+-- name: CreateAccount :one
+INSERT INTO accounts (owner, email, balance)
+VALUES ($1, $2, $3)
+RETURNING *;

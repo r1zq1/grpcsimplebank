@@ -1,45 +1,51 @@
 package main
 
 import (
-	"database/sql"
-	"log"
-	"net"
-
+	"github.com/hibiken/asynq"
 	"github.com/r1zq1/grpcsimplebank/config"
-	db "github.com/r1zq1/grpcsimplebank/db/sqlc"
-	"github.com/r1zq1/grpcsimplebank/pb"
-	"github.com/r1zq1/grpcsimplebank/service"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
+	"github.com/r1zq1/grpcsimplebank/server"
+	"github.com/r1zq1/grpcsimplebank/worker"
+	"github.com/rs/zerolog/log"
 
 	_ "github.com/lib/pq"
 )
 
 func main() {
-	conf, err := config.LoadConfig(".env")
+	go server.StartGatewayServer()
+	go server.StartGRPCServer()
+
+	// Load configuration
+	config, err := config.LoadConfig(".env")
 	if err != nil {
-		log.Fatalf("gagal baca config: %v", err)
+		log.Fatal().Err(err).Msg("cannot load config: %v")
 	}
 
-	conn, err := sql.Open("postgres", conf.DBSource)
-	if err != nil {
-		log.Fatalf("tidak bisa connect ke db: %v", err)
+	// Setup Redis connection options
+	redisOpt := asynq.RedisClientOpt{
+		Addr: config.RedisAddress, // e.g., "localhost:6379"
 	}
 
-	store := db.NewStore(conn)
-	server := grpc.NewServer()
+	// Create task processor
+	processor := worker.NewRedisTaskProcessor(config)
 
-	pb.RegisterTransferServiceServer(server,
-		&service.TransferServer{Store: store})
-	reflection.Register(server)
+	// Create Asynq server
+	srv := asynq.NewServer(redisOpt, asynq.Config{
+		Concurrency: 10,
+		Queues: map[string]int{
+			"critical": 6,
+			"default":  4,
+		},
+	})
 
-	listener, err := net.Listen("tcp", conf.GRPCAddress)
-	if err != nil {
-		log.Fatalf("gagal listen: %v", err)
+	// Register task handler(s)
+	mux := asynq.NewServeMux()
+	mux.HandleFunc(worker.TaskSendWelcomeEmail, processor.ProcessTaskSendWelcomeEmail)
+
+	log.Info().Msg("👷‍♂️ Starting Asynq worker server...")
+
+	// Start processing tasks
+	if err := srv.Run(mux); err != nil {
+		log.Fatal().Err(err).Msg("could not run Asynq server: %v")
 	}
-
-	log.Printf("server berjalan di %s", conf.GRPCAddress)
-	if err := server.Serve(listener); err != nil {
-		log.Fatalf("gagal serve: %v", err)
-	}
+	select {}
 }

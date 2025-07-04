@@ -2,11 +2,12 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        v6.31.1
-// source: proto/transfer.proto
+// source: transfer.proto
 
 package pb
 
 import (
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -32,7 +33,7 @@ type TransferRequest struct {
 
 func (x *TransferRequest) Reset() {
 	*x = TransferRequest{}
-	mi := &file_proto_transfer_proto_msgTypes[0]
+	mi := &file_transfer_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44,7 +45,7 @@ func (x *TransferRequest) String() string {
 func (*TransferRequest) ProtoMessage() {}
 
 func (x *TransferRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_transfer_proto_msgTypes[0]
+	mi := &file_transfer_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57,7 +58,7 @@ func (x *TransferRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransferRequest.ProtoReflect.Descriptor instead.
 func (*TransferRequest) Descriptor() ([]byte, []int) {
-	return file_proto_transfer_proto_rawDescGZIP(), []int{0}
+	return file_transfer_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *TransferRequest) GetFromAccountId() int64 {
@@ -94,7 +95,7 @@ type TransferResponse struct {
 
 func (x *TransferResponse) Reset() {
 	*x = TransferResponse{}
-	mi := &file_proto_transfer_proto_msgTypes[1]
+	mi := &file_transfer_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -106,7 +107,7 @@ func (x *TransferResponse) String() string {
 func (*TransferResponse) ProtoMessage() {}
 
 func (x *TransferResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_transfer_proto_msgTypes[1]
+	mi := &file_transfer_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -119,7 +120,7 @@ func (x *TransferResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransferResponse.ProtoReflect.Descriptor instead.
 func (*TransferResponse) Descriptor() ([]byte, []int) {
-	return file_proto_transfer_proto_rawDescGZIP(), []int{1}
+	return file_transfer_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *TransferResponse) GetId() int64 {
@@ -157,11 +158,107 @@ func (x *TransferResponse) GetCreatedAt() string {
 	return ""
 }
 
-var File_proto_transfer_proto protoreflect.FileDescriptor
+type HistoryRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccountId     int64                  `protobuf:"varint,1,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
 
-const file_proto_transfer_proto_rawDesc = "" +
+func (x *HistoryRequest) Reset() {
+	*x = HistoryRequest{}
+	mi := &file_transfer_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HistoryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HistoryRequest) ProtoMessage() {}
+
+func (x *HistoryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_transfer_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HistoryRequest.ProtoReflect.Descriptor instead.
+func (*HistoryRequest) Descriptor() ([]byte, []int) {
+	return file_transfer_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *HistoryRequest) GetAccountId() int64 {
+	if x != nil {
+		return x.AccountId
+	}
+	return 0
+}
+
+type TransferSummary struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SuccessCount  int32                  `protobuf:"varint,1,opt,name=success_count,json=successCount,proto3" json:"success_count,omitempty"`
+	FailedCount   int32                  `protobuf:"varint,2,opt,name=failed_count,json=failedCount,proto3" json:"failed_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TransferSummary) Reset() {
+	*x = TransferSummary{}
+	mi := &file_transfer_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TransferSummary) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TransferSummary) ProtoMessage() {}
+
+func (x *TransferSummary) ProtoReflect() protoreflect.Message {
+	mi := &file_transfer_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TransferSummary.ProtoReflect.Descriptor instead.
+func (*TransferSummary) Descriptor() ([]byte, []int) {
+	return file_transfer_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *TransferSummary) GetSuccessCount() int32 {
+	if x != nil {
+		return x.SuccessCount
+	}
+	return 0
+}
+
+func (x *TransferSummary) GetFailedCount() int32 {
+	if x != nil {
+		return x.FailedCount
+	}
+	return 0
+}
+
+var File_transfer_proto protoreflect.FileDescriptor
+
+const file_transfer_proto_rawDesc = "" +
 	"\n" +
-	"\x14proto/transfer.proto\x12\x0egrpcsimplebank\"u\n" +
+	"\x0etransfer.proto\x12\x0egrpcsimplebank\x1a\x1cgoogle/api/annotations.proto\"u\n" +
 	"\x0fTransferRequest\x12&\n" +
 	"\x0ffrom_account_id\x18\x01 \x01(\x03R\rfromAccountId\x12\"\n" +
 	"\rto_account_id\x18\x02 \x01(\x03R\vtoAccountId\x12\x16\n" +
@@ -172,57 +269,74 @@ const file_proto_transfer_proto_rawDesc = "" +
 	"\rto_account_id\x18\x03 \x01(\x03R\vtoAccountId\x12\x16\n" +
 	"\x06amount\x18\x04 \x01(\x03R\x06amount\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x05 \x01(\tR\tcreatedAt2`\n" +
-	"\x0fTransferService\x12M\n" +
-	"\bTransfer\x12\x1f.grpcsimplebank.TransferRequest\x1a .grpcsimplebank.TransferResponseB\aZ\x05./;pbb\x06proto3"
+	"created_at\x18\x05 \x01(\tR\tcreatedAt\"/\n" +
+	"\x0eHistoryRequest\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x01 \x01(\x03R\taccountId\"Y\n" +
+	"\x0fTransferSummary\x12#\n" +
+	"\rsuccess_count\x18\x01 \x01(\x05R\fsuccessCount\x12!\n" +
+	"\ffailed_count\x18\x02 \x01(\x05R\vfailedCount2\xff\x02\n" +
+	"\x0fTransferService\x12f\n" +
+	"\bTransfer\x12\x1f.grpcsimplebank.TransferRequest\x1a .grpcsimplebank.TransferResponse\"\x17\x82\xd3\xe4\x93\x02\x11:\x01*\"\f/v1/transfer\x12X\n" +
+	"\x12GetTransferHistory\x12\x1e.grpcsimplebank.HistoryRequest\x1a .grpcsimplebank.TransferResponse0\x01\x12S\n" +
+	"\rBatchTransfer\x12\x1f.grpcsimplebank.TransferRequest\x1a\x1f.grpcsimplebank.TransferSummary(\x01\x12U\n" +
+	"\fLiveTransfer\x12\x1f.grpcsimplebank.TransferRequest\x1a .grpcsimplebank.TransferResponse(\x010\x01B\aZ\x05./;pbb\x06proto3"
 
 var (
-	file_proto_transfer_proto_rawDescOnce sync.Once
-	file_proto_transfer_proto_rawDescData []byte
+	file_transfer_proto_rawDescOnce sync.Once
+	file_transfer_proto_rawDescData []byte
 )
 
-func file_proto_transfer_proto_rawDescGZIP() []byte {
-	file_proto_transfer_proto_rawDescOnce.Do(func() {
-		file_proto_transfer_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_transfer_proto_rawDesc), len(file_proto_transfer_proto_rawDesc)))
+func file_transfer_proto_rawDescGZIP() []byte {
+	file_transfer_proto_rawDescOnce.Do(func() {
+		file_transfer_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_transfer_proto_rawDesc), len(file_transfer_proto_rawDesc)))
 	})
-	return file_proto_transfer_proto_rawDescData
+	return file_transfer_proto_rawDescData
 }
 
-var file_proto_transfer_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
-var file_proto_transfer_proto_goTypes = []any{
+var file_transfer_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_transfer_proto_goTypes = []any{
 	(*TransferRequest)(nil),  // 0: grpcsimplebank.TransferRequest
 	(*TransferResponse)(nil), // 1: grpcsimplebank.TransferResponse
+	(*HistoryRequest)(nil),   // 2: grpcsimplebank.HistoryRequest
+	(*TransferSummary)(nil),  // 3: grpcsimplebank.TransferSummary
 }
-var file_proto_transfer_proto_depIdxs = []int32{
+var file_transfer_proto_depIdxs = []int32{
 	0, // 0: grpcsimplebank.TransferService.Transfer:input_type -> grpcsimplebank.TransferRequest
-	1, // 1: grpcsimplebank.TransferService.Transfer:output_type -> grpcsimplebank.TransferResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	2, // 1: grpcsimplebank.TransferService.GetTransferHistory:input_type -> grpcsimplebank.HistoryRequest
+	0, // 2: grpcsimplebank.TransferService.BatchTransfer:input_type -> grpcsimplebank.TransferRequest
+	0, // 3: grpcsimplebank.TransferService.LiveTransfer:input_type -> grpcsimplebank.TransferRequest
+	1, // 4: grpcsimplebank.TransferService.Transfer:output_type -> grpcsimplebank.TransferResponse
+	1, // 5: grpcsimplebank.TransferService.GetTransferHistory:output_type -> grpcsimplebank.TransferResponse
+	3, // 6: grpcsimplebank.TransferService.BatchTransfer:output_type -> grpcsimplebank.TransferSummary
+	1, // 7: grpcsimplebank.TransferService.LiveTransfer:output_type -> grpcsimplebank.TransferResponse
+	4, // [4:8] is the sub-list for method output_type
+	0, // [0:4] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_proto_transfer_proto_init() }
-func file_proto_transfer_proto_init() {
-	if File_proto_transfer_proto != nil {
+func init() { file_transfer_proto_init() }
+func file_transfer_proto_init() {
+	if File_transfer_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_transfer_proto_rawDesc), len(file_proto_transfer_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_transfer_proto_rawDesc), len(file_transfer_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_proto_transfer_proto_goTypes,
-		DependencyIndexes: file_proto_transfer_proto_depIdxs,
-		MessageInfos:      file_proto_transfer_proto_msgTypes,
+		GoTypes:           file_transfer_proto_goTypes,
+		DependencyIndexes: file_transfer_proto_depIdxs,
+		MessageInfos:      file_transfer_proto_msgTypes,
 	}.Build()
-	File_proto_transfer_proto = out.File
-	file_proto_transfer_proto_goTypes = nil
-	file_proto_transfer_proto_depIdxs = nil
+	File_transfer_proto = out.File
+	file_transfer_proto_goTypes = nil
+	file_transfer_proto_depIdxs = nil
 }

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v6.31.1
-// source: proto/transfer.proto
+// source: transfer.proto
 
 package pb
 
@@ -19,7 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TransferService_Transfer_FullMethodName = "/grpcsimplebank.TransferService/Transfer"
+	TransferService_Transfer_FullMethodName           = "/grpcsimplebank.TransferService/Transfer"
+	TransferService_GetTransferHistory_FullMethodName = "/grpcsimplebank.TransferService/GetTransferHistory"
+	TransferService_BatchTransfer_FullMethodName      = "/grpcsimplebank.TransferService/BatchTransfer"
+	TransferService_LiveTransfer_FullMethodName       = "/grpcsimplebank.TransferService/LiveTransfer"
 )
 
 // TransferServiceClient is the client API for TransferService service.
@@ -27,6 +30,10 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TransferServiceClient interface {
 	Transfer(ctx context.Context, in *TransferRequest, opts ...grpc.CallOption) (*TransferResponse, error)
+	// Tambahan: Streaming examples
+	GetTransferHistory(ctx context.Context, in *HistoryRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[TransferResponse], error)
+	BatchTransfer(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[TransferRequest, TransferSummary], error)
+	LiveTransfer(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[TransferRequest, TransferResponse], error)
 }
 
 type transferServiceClient struct {
@@ -47,11 +54,60 @@ func (c *transferServiceClient) Transfer(ctx context.Context, in *TransferReques
 	return out, nil
 }
 
+func (c *transferServiceClient) GetTransferHistory(ctx context.Context, in *HistoryRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[TransferResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &TransferService_ServiceDesc.Streams[0], TransferService_GetTransferHistory_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[HistoryRequest, TransferResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type TransferService_GetTransferHistoryClient = grpc.ServerStreamingClient[TransferResponse]
+
+func (c *transferServiceClient) BatchTransfer(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[TransferRequest, TransferSummary], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &TransferService_ServiceDesc.Streams[1], TransferService_BatchTransfer_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[TransferRequest, TransferSummary]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type TransferService_BatchTransferClient = grpc.ClientStreamingClient[TransferRequest, TransferSummary]
+
+func (c *transferServiceClient) LiveTransfer(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[TransferRequest, TransferResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &TransferService_ServiceDesc.Streams[2], TransferService_LiveTransfer_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[TransferRequest, TransferResponse]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type TransferService_LiveTransferClient = grpc.BidiStreamingClient[TransferRequest, TransferResponse]
+
 // TransferServiceServer is the server API for TransferService service.
 // All implementations must embed UnimplementedTransferServiceServer
 // for forward compatibility.
 type TransferServiceServer interface {
 	Transfer(context.Context, *TransferRequest) (*TransferResponse, error)
+	// Tambahan: Streaming examples
+	GetTransferHistory(*HistoryRequest, grpc.ServerStreamingServer[TransferResponse]) error
+	BatchTransfer(grpc.ClientStreamingServer[TransferRequest, TransferSummary]) error
+	LiveTransfer(grpc.BidiStreamingServer[TransferRequest, TransferResponse]) error
 	mustEmbedUnimplementedTransferServiceServer()
 }
 
@@ -64,6 +120,15 @@ type UnimplementedTransferServiceServer struct{}
 
 func (UnimplementedTransferServiceServer) Transfer(context.Context, *TransferRequest) (*TransferResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Transfer not implemented")
+}
+func (UnimplementedTransferServiceServer) GetTransferHistory(*HistoryRequest, grpc.ServerStreamingServer[TransferResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method GetTransferHistory not implemented")
+}
+func (UnimplementedTransferServiceServer) BatchTransfer(grpc.ClientStreamingServer[TransferRequest, TransferSummary]) error {
+	return status.Errorf(codes.Unimplemented, "method BatchTransfer not implemented")
+}
+func (UnimplementedTransferServiceServer) LiveTransfer(grpc.BidiStreamingServer[TransferRequest, TransferResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method LiveTransfer not implemented")
 }
 func (UnimplementedTransferServiceServer) mustEmbedUnimplementedTransferServiceServer() {}
 func (UnimplementedTransferServiceServer) testEmbeddedByValue()                         {}
@@ -104,6 +169,31 @@ func _TransferService_Transfer_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TransferService_GetTransferHistory_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(HistoryRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(TransferServiceServer).GetTransferHistory(m, &grpc.GenericServerStream[HistoryRequest, TransferResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type TransferService_GetTransferHistoryServer = grpc.ServerStreamingServer[TransferResponse]
+
+func _TransferService_BatchTransfer_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(TransferServiceServer).BatchTransfer(&grpc.GenericServerStream[TransferRequest, TransferSummary]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type TransferService_BatchTransferServer = grpc.ClientStreamingServer[TransferRequest, TransferSummary]
+
+func _TransferService_LiveTransfer_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(TransferServiceServer).LiveTransfer(&grpc.GenericServerStream[TransferRequest, TransferResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type TransferService_LiveTransferServer = grpc.BidiStreamingServer[TransferRequest, TransferResponse]
+
 // TransferService_ServiceDesc is the grpc.ServiceDesc for TransferService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -116,6 +206,23 @@ var TransferService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _TransferService_Transfer_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/transfer.proto",
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "GetTransferHistory",
+			Handler:       _TransferService_GetTransferHistory_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "BatchTransfer",
+			Handler:       _TransferService_BatchTransfer_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "LiveTransfer",
+			Handler:       _TransferService_LiveTransfer_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+	},
+	Metadata: "transfer.proto",
 }

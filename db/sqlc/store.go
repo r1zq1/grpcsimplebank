@@ -5,14 +5,16 @@ import (
 	"database/sql"
 )
 
+// Store interface (untuk mocking)
 type Store interface {
-	TrasferTx(ctx context.Context, arg TrasferTxParams) (TrasferTxResult, error)
 	Querier
+	TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error)
 }
 
+// SQLStore implementasi konkret Store
 type SQLStore struct {
-	*Queries
 	db *sql.DB
+	*Queries
 }
 
 func NewStore(db *sql.DB) Store {

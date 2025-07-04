@@ -7,8 +7,14 @@ import (
 )
 
 type Config struct {
-	DBSource    string `mapstructure:"DB_SOURCE"`
-	GRPCAddress string `mapstructure:"GRPC_ADDRESS"`
+	DBSource     string `mapstructure:"DB_SOURCE"`
+	GRPCAddress  string `mapstructure:"GRPC_ADDRESS"`
+	RedisAddress string `mapstructure:"REDIS_ADDRESS"`
+	SMTPHost     string `mapstructure:"smtp_host"`
+	SMTPPort     int    `mapstructure:"smtp_port"`
+	SMTPUsername string `mapstructure:"smtp_username"`
+	SMTPPassword string `mapstructure:"smtp_password"`
+	SMTPFrom     string `mapstructure:"smtp_from"`
 }
 
 func LoadConfig(path string) (Config, error) {

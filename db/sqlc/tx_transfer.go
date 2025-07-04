@@ -5,47 +5,22 @@ import (
 	"fmt"
 )
 
-type TrasferTxParams struct {
+// TransferTxParams input utama
+type TransferTxParams struct {
 	FromAccountID int64
 	ToAccountID   int64
 	Amount        int64
 }
 
-type TrasferTxResult struct {
-	Transfer Transfer
+// TransferTxResult hasil output transaksi
+type TransferTxResult struct {
+	Transfer    Transfer
+	FromAccount Account
+	ToAccount   Account
 }
 
-func (store *SQLStore) TrasferTx(ctx context.Context,
-	arg TrasferTxParams) (TrasferTxResult, error) {
-	var result TrasferTxResult
-
-	err := store.execTx(ctx, func(q *Queries) error {
-		transfer, err := q.CreateTransfer(ctx,
-			CreateTransferParams{
-				FromAccountID: arg.FromAccountID,
-				ToAccountID:   arg.ToAccountID,
-				Amount:        arg.Amount,
-			})
-		if err != nil {
-			return err
-		}
-
-		if arg.FromAccountID < arg.ToAccountID {
-			_, err =
-				addMoney(ctx, q, arg.FromAccountID, -arg.Amount)
-			if err != nil {
-				return err
-			}
-		}
-
-		result.Transfer = transfer
-		return nil
-	})
-	return result, err
-}
-
-func (store *SQLStore) execTx(ctx context.Context,
-	fn func(*Queries) error) error {
+// jalankan fungsi dalam transaksi SQL
+func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
 	tx, err := store.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -55,19 +30,51 @@ func (store *SQLStore) execTx(ctx context.Context,
 	err = fn(q)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
-			return fmt.Errorf("tx err: %v, rollback err: %v",
-				err, rbErr)
+			return fmt.Errorf("tx err: %v, rollback err: %v", err, rbErr)
 		}
 		return err
 	}
+
 	return tx.Commit()
 }
 
-func addMoney(ctx context.Context, q *Queries,
-	accountID int64, amount int64) (Account, error) {
-	return q.AddAccountBalance(ctx,
-		AddAccountBalanceParams{
-			ID:      accountID,
-			Balance: amount,
+// TransferTx menjalankan transfer atomik
+func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
+	var result TransferTxResult
+
+	err := store.execTx(ctx, func(q *Queries) error {
+		var err error
+
+		// 1. Buat transfer record
+		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
+			FromAccountID: arg.FromAccountID,
+			ToAccountID:   arg.ToAccountID,
+			Amount:        arg.Amount,
 		})
+		if err != nil {
+			return err
+		}
+
+		// 2. Update saldo dari pengirim
+		result.FromAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
+			ID:      arg.FromAccountID,
+			Balance: -arg.Amount,
+		})
+		if err != nil {
+			return err
+		}
+
+		// 3. Update saldo ke penerima
+		result.ToAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
+			ID:      arg.ToAccountID,
+			Balance: arg.Amount,
+		})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	return result, err
 }

@@ -10,9 +10,11 @@ import (
 
 type Querier interface {
 	AddAccountBalance(ctx context.Context, arg AddAccountBalanceParams) (Account, error)
+	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
 	CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error)
 	GetAccount(ctx context.Context, id int64) (Account, error)
 	GetAccountForUpdate(ctx context.Context, id int64) (Account, error)
+	ListTransfersByAccountID(ctx context.Context, fromAccountID int64) ([]Transfer, error)
 }
 
 var _ Querier = (*Queries)(nil)
